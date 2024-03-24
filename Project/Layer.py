@@ -17,12 +17,13 @@ class Layer:
     :param params: Dictionary containing additional params (e.g. used by Adam algorithm)
     """
 
-    def __init__(self, inputs=int(1), nodes=int(1), initial_weight=None, activation=activation_functions['relu'], params={}):
+    def __init__(self, inputs=int(1), nodes=int(1), input_weights=None, biases=None, activation=activation_functions['relu'], params={}):
         """
         Create a Layer of the NN
         :param inputs: The number of inputs coming into the Layer
         :param nodes: The number of nodes this Layer has
-        :param initial_weight: The initial weight of all weights of the Layer, if set to None each weight gets a different initial random value from a uniform distribution over [0, 1).
+        :param input_weights: The initial weights of all input weights of the Layer, if set to None each weight gets a different initial random value from a uniform distribution over [0, 1).
+        :param biases: The initial biases of the nodes, if None zeros are assigned
         :param activation: The activation function of the nodes (same for all nodes)
         can be one of functions._relu, functions._sigmoid, functions._tanh, functions._linear
         :param params: Dictionary containing additional params (e.g. used by Adam algorithm)
@@ -34,8 +35,11 @@ class Layer:
         #self.weights = np.random.rand(inputs, nodes)
         self.weights = np.random.RandomState(42).normal(loc=0.0, scale=0.1, size=(inputs, nodes))
         self.params = params
-        if initial_weight is not None:
-            self.weights.fill(initial_weight)
+        if input_weights is not None:
+            self.weights = np.array(input_weights)
+        self.b = np.zeros(nodes)
+        if biases is not None:
+            self.b = np.array(biases)
         self.activation = np.vectorize(activation[0])
         self.derivative = np.vectorize(activation[1])
 
@@ -45,8 +49,8 @@ class Layer:
         :param x: input to this layer
         :return: the output values
         """
-        self.x += x
-        z = np.dot(x, self.weights)
+        self.x = self.x + x
+        z = np.dot(x, self.weights) + self.b
         self.a = self.activation(z)
         self.derivative_z = self.derivative(z)
         return self.a
@@ -68,9 +72,10 @@ class Layer:
         Learn, i.e. update the weights and initialize the sums
         The X that has come as input from the previous layer through eval() calls is set to 0
         The Δ that has come from the next layer through back() calls is set to 0
-        :param dw: The values to add to the current weights
+        :param dw: The values to add to the current weights and biases
         :return: None
         """
         self.x = np.zeros(self.weights.shape[0])
         self.d = np.zeros(self.weights.shape[1])
         self.weights = self.weights + dw
+        self.b = self.b + np.sum(dw)

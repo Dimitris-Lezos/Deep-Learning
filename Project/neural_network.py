@@ -12,49 +12,27 @@ from Layer import Layer
 from typing import List
 import json
 
-# def dw(self, n=float(1e-9)):
-#     # self.weights = self.weights + n*2*self.a*self.d
-#     # self.weights = (self.weights.T*(1 + n*2*np.outer(self.x, self.d))).T
-#     self.weights = (self.weights * (1 + n * 2 * np.outer(self.x, self.d)))
-#     return self.weights
 
 class ANN:
     def __init__(self, configuration: {}):
         # Create the ANN's layers
-        layers = createANN(len(x_train.columns), configuration['ANN']['layers'])
+        self.layers = ANN.createANN(x_train.shape[1], configuration['ANN']['layers'])
         # Read the training parameters
-        loss_function = loss_functions[configuration['loss_function']]
-        batch_size = configuration['batch_size']
-        epochs = configuration['epochs']
-        tol = configuration['tol']
+        self.loss_function = loss_functions[configuration['ANN']['loss_function']]
+        self.batch_size = configuration['ANN']['batch_size']
+        self.epochs = configuration['ANN']['epochs']
+        self.tol = configuration['ANN']['tol']
         # Read the Adam parameters
-        a = configuration['ANN']['adam']['a']
-        b1 = configuration['ANN']['adam']['b1']
-        b2 = configuration['ANN']['adam']['b2']
-        b1t = b1
-        b2t = b2
-        N = batch_size
+        self.a = configuration['ANN']['adam']['a']
+        self.b1 = configuration['ANN']['adam']['b1']
+        self.b2 = configuration['ANN']['adam']['b2']
+        self.e = configuration['ANN']['adam']['e']
 
-    def fit(self, x_train, y_train, x_valid, y_valid) -> None:
-        """
-        Learn weights from training data.
-        :param x_train: array, shape = [n_samples, n_features] Input layer with original features.
-        :param y_train: array, shape = [n_samples] Target class labels.
-        :param x_valid: array, shape = [n_samples, n_features] Sample features for validation during training
-        :param y_valid: array, shape = [n_samples] Sample labels for validation during training
-        :return: None
-        """
-        pass
-
-
-    def adam(layer: Layer,
+    def adam(self,
+             layer: Layer,
              N=1,
-             a=float(0.0001),
-             b1=float(0.9),
              b1t=float(0.9),
-             b2=float(0.999),
              b2t=float(0.999),
-             e=float(1e-8)
              ) -> None:
         """
         Implements the adam algorithm
@@ -69,74 +47,99 @@ class ANN:
         :return: None
         """
         g = -1 * np.outer(layer.x/N, layer.d/N)  # self.d
-        layer.params['m'] = b1 * layer.params['m'] + (1 - b1) * g
-        layer.params['v'] = b2 * layer.params['v'] + (1 - b2) * np.power(g, 2)
+        layer.params['m'] = self.b1 * layer.params['m'] + (1 - self.b1) * g
+        layer.params['v'] = self.b2 * layer.params['v'] + (1 - self.b2) * np.power(g, 2)
         m = layer.params['m'] / (1 - b1t)
         v = layer.params['v'] / (1 - b2t)
-        dw = -1 * (a * m / (np.sqrt(v) + e))
+        dw = -1 * (self.a * m / (np.sqrt(v) + self.e))
         layer.learn(dw)
 
+    def fit(self, x_train, y_train, x_valid, y_valid) -> None:
+        """
+        Learn weights from training data.
+        :param x_train: array, shape = [n_samples, n_features] Input layer with original features.
+        :param y_train: array, shape = [n_samples] Target class labels.
+        :param x_valid: array, shape = [n_samples, n_features] Sample features for validation during training
+        :param y_valid: array, shape = [n_samples] Sample labels for validation during training
+        :return: None
+        """
+        # Run epochs times
+        for epoch in range(self.epochs):
+            # TODO: pass the whole batch as a matrix
+            i = 0
+            batch_loss = 0.0
+            b1t = self.b1
+            b2t = self.b2
+            converged = False
+            for x in range(len(x_train)):
+                if converged:
+                    break
+                # Feed Forward
+                in_x = x_train[x]
+                target = y_train[x]
+                for layer in self.layers:
+                    in_x = layer.eval(in_x)
+                # Calculate loss
+                loss = self.loss_function(target, in_x)
+                if i == 0:
+                    print(target, in_x, loss)
+                # Sum the loss for the batch
+                batch_loss += loss
+                # Back Propagation
+                for layer in reversed(self.layers):
+                    loss = layer.back(loss)
+                i += 1
+                # Check for a finished batch
+                if i == self.batch_size:
+                    i = 0
+                    # Check end conditions
+                    # if np.sum(batch_loss)/self.batch_size < self.tol or (
+                    #         np.sum(in_x) > np.sum(target) and np.sum(in_x) > np.sum(np.power(target, 2))):
+                    if np.sum(batch_loss) / self.batch_size < self.tol:
+                        print(f'Loss minimized in {epoch} epochs and {x} iterations!')
+                        converged = True
+                    if not converged:
+                        # Update weights
+                        for layer in self.layers:
+                            self.adam(layer, N=self.batch_size, b1t=b1t, b2t=b2t)
+                        # Calculate b1^t, b2^t for the next t
+                        b1t = b1t * self.b1
+                        b2t = b2t * self.b2
 
-def ultra_simple_ANN():
-    """
-    Create a very simple NN with a single neuron used for testing
-    :return:
-    """
-    layers_descriptor = np.array([2,1])
-    input = np.array([2, 7])
-    target = np.array([8.0])
-    return layers_descriptor, input, target
-
-def simple_ANN():
-    """
-    Create a simple NN with two neurons used for testing
-    :return:
-    """
-    layers_descriptor = np.array([3,2])
-    input = np.array([1, 1, 1])
-    target = np.array([4.0, 3.0])
-    return layers_descriptor, input, target
-
-def complex_ANN():
-    """
-    Create a simple NN with three layers of 10, 7, 2 neurons used for testing
-    :return:
-    """
-    layers_descriptor = np.array([10, 10, 7, 2])
-    input = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
-    target = np.array([1000.0, 1000.0])
-    return layers_descriptor, input, target
-
-
-def createANN(inputs: int, layers_descriptor: np.array) -> List[Layer]:
-    """
-    Creates an ANN based on the layers_descriptor
-    :param layers_descriptor:
-    :param activation:
-    :return:
-    """
-    layers = []
-    for layer_description in layers_descriptor:
-        nodes = layer_description['nodes']
-        activation = 'relu'
-        if 'activation' in layer_description:
-            activation = layer_description['activation']
-        initial_weight = None
-        if 'initial_weight' in layer_description:
-            initial_weight = layer_description['initial_weight']
-        # Additional parameters for ADAM
-        adam_params = {'m':np.zeros((inputs, nodes)), 'v':np.zeros((inputs, nodes))} #, _d:np.zeros(nodes)}
-        layers.append(
-            Layer(
-                inputs,
-                nodes,
-                params=adam_params,
-                initial_weight=initial_weight,
-                activation=activation_functions[activation]
+    def createANN(inputs: int, layers_descriptor: np.array) -> List[Layer]:
+        """
+        Creates an ANN based on the layers_descriptor
+        :param layers_descriptor:
+        :param activation:
+        :return:
+        """
+        layers = []
+        for layer_description in layers_descriptor:
+            nodes = layer_description['nodes']
+            activation = 'relu'
+            if 'activation' in layer_description:
+                activation = layer_description['activation']
+            input_weights = None
+            if 'input_weights' in layer_description:
+                input_weights = layer_description['input_weights']
+            biases = None
+            if 'biases' in layer_description:
+                biases = layer_description['biases']
+            # Additional parameters for ADAM
+            adam_params = {'m':np.zeros((inputs, nodes)), 'v':np.zeros((inputs, nodes))} #, _d:np.zeros(nodes)}
+            layers.append(
+                Layer(
+                    inputs,
+                    nodes,
+                    params=adam_params,
+                    input_weights=input_weights,
+                    biases=biases,
+                    activation=activation_functions[activation]
+                )
             )
-        )
-        inputs = nodes
-    return layers
+            inputs = nodes
+        return layers
+
 
 def read_configuration(config_filename='config.json') -> {}:
     try:
@@ -148,84 +151,30 @@ def read_configuration(config_filename='config.json') -> {}:
 
 if __name__ == '__main__':
     # Read the configuration file
-    config_filename = 'config.json'
+    config_filename = 'math_config.json'
     if len(sys.argv) > 1:
         config_filename = sys.argv[1]
     configuration = read_configuration(config_filename)
     # Read train and test data
-    train_data = pd.read_csv(configuration['train_data_filename'], header=configuration['header'])
-    test_data = pd.read_csv(configuration['test_data_filename'], header=configuration['header'])
+    train_data = pd.read_csv(configuration['train_data_filename'], header=configuration['header'], dtype=float)
+    test_data = pd.read_csv(configuration['test_data_filename'], header=configuration['header'], dtype=float)
     if len(train_data.columns) != len(test_data.columns):
         print('Train data from file', configuration['train_data_filename'],
               'and Test data from file', configuration['test_data_filename'],
               'have different number of columns!')
         print('Aborting!')
         exit(-1)
-    output_size = configuration['output_size']
-    x_train = train_data.iloc[:,:-output_size]
-    y_train = train_data.iloc[:,-output_size:]
-    x_test = test_data.iloc[:,:-output_size]
-    y_test = test_data.iloc[:,-output_size:]
+    output_size = configuration['ANN']['layers'][len(configuration['ANN']['layers'])-1]['nodes']
+    x_train = train_data.iloc[:,:-output_size].to_numpy()
+    y_train = train_data.iloc[:,-output_size:].to_numpy()
+    x_test = test_data.iloc[:,:-output_size].to_numpy()
+    y_test = test_data.iloc[:,-output_size:].to_numpy()
     # Create the ANN
     ann = ANN(configuration)
     # Run the ANN training
     ann.fit(x_train, y_train, x_test, y_test)
-
-    # Complex ANN
-    #layers_descriptor, x, target = complex_ANN()
-    # Simple ANN
-    layers_descriptor, x, target = simple_ANN()
-    # Ultra Simple ANN
-    #layers_descriptor, x, target = ultra_simple_ANN()
-    layers = createANN(layers_descriptor)
-    loss_function = _cce_loss
-    #loss_function = _mse_loss
-    for layer in layers:
-        print(layer.weights)
     print("###############################################")
-    # Train
-    # Initialization for adam:
-    b1 = 0.99
-    b2 = 0.999
-    b1t = b1
-    b2t = b2
-    N = 10
-    for t in range(10000):
-        # Use mini-batch of 10 inputs
-        batch_loss = 0.0
-        for i in range(N):
-            # Feed Forward
-            a = x
-            for layer in layers:
-                a = layer.eval(a)
-            # Calculate loss
-            loss = loss_function(target, a)
-            if i == 9 and t % 10 == 0:
-                print(a, loss)
-            # loss = np.sum((target-a)**2)/len(target)
-            batch_loss += loss
-            # Back Propagation
-            for layer in reversed(layers):
-                loss = layer.back(loss)
-        if np.sum(loss) < 0.001 or np.sum(loss) > np.sum(np.power(target, 2)):
-            print(f'Loss minimized in {t} iterations!')
-            break
-        # Update weights
-        # for layer in layers:
-        #     layer.learn()
-        # Update weights for adam
-        for layer in layers:
-            adam(layer, N=N, b1=b1, b2=b2, b1t=b1t, b2t=b2t, a=0.001)
-        # Calculate b1^t, b2^t for the next t
-        b1t = b1t * b1
-        b2t = b2t * b2
-
-        # if t % 10 == 0:
-        #     # for layer in layers:
-        #     #     print(layer.a, end=" ")
-        #     print(layers[len(layers) - 1].a, loss)
-    print("###############################################")
-    for layer in layers:
+    for layer in ann.layers:
         print(layer.weights)
     print("----------------------------------------------")
-    print(loss)
+    # print(loss)

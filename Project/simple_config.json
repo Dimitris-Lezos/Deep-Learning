@@ -2,7 +2,6 @@
   "train_data_filename": "train.csv",
   "test_data_filename": "test.csv",
   "header": null,
-  "output_size": 2,
   "ANN": {
     "adam": {
       "a": 0.001,
@@ -16,17 +15,11 @@
         "activation": "relu",
         "input_weights": null,
         "biases": null
-      },
-      {
-        "nodes": 3,
-        "activation": "relu",
-        "input_weights": [[1.0,2.0,3.0],[91.0,92.0,93.0]],
-        "biases": [1.0,2.0,3.0]
       }
     ],
     "loss_function": "cce",
     "batch_size": 10,
-    "epochs": 10,
-    "tol": 0.00000001
+    "epochs": 1000,
+    "tol": 0.1
   }
 }
