@@ -6,23 +6,17 @@
   "header": 0,
   "ANN": {
     "adam": {
-      "a": 0.001,
+      "a": 0.1,
       "b1": 0.9,
       "b2": 0.999,
       "e": 0.00000001
     },
     "layers": [
       {
-        "nodes": 3,
-        "activation": "relu",
-        "input_weights": null,
-        "biases": null
-      },
-      {
         "nodes": 2,
         "activation": "relu",
-        "input_weights": null,
-        "biases": null
+        "input_weights": [[1, 10], [2, 20], [3, 30]],
+        "biases": [0, 0]
       }
     ],
     "loss_function": "mse",

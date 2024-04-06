@@ -15,14 +15,14 @@
       {
         "nodes": 3,
         "activation": "relu",
-        "input_weights": null,
-        "biases": null
+        "input_weights": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+        "biases": [0, 0, 0]
       },
       {
         "nodes": 2,
         "activation": "relu",
-        "input_weights": null,
-        "biases": null
+        "input_weights": [[1, 1], [1, 1], [1, 1]],
+        "biases": [0, 0, 0]
       }
     ],
     "loss_function": "mse",

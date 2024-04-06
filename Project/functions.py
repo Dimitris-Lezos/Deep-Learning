@@ -3,6 +3,7 @@ ReLU, sigmoid, tangent, and linear
 """
 import numpy as np
 
+
 def relu(x: float) -> float:
     """
     Calculates the ReLU output for input x
@@ -76,38 +77,41 @@ def linear_derivative(x: float) -> float:
     """
     return 1
 
+
 def softmax(x: np.array) -> np.array:
     # TODO: This needs to be normalized to avoid [inf] from the exp
     e = np.exp(x)
     return e / np.sum(e)
 
-def softmax_derivative(x: np.array) -> np.array:
-    pass
 
-def mse_loss(target: np.array, actual: np.array) -> np.array:
+def mse_loss(target: np.array, actual: np.array) -> (np.array, np.array):
     """
     Calculates the MSE (Mean Square Error) loss between target and actual
     :param target: The target value for each output
     :param actual: The actual (calculated) value for each output
-    :return: The loss for each output
+    :return: Tuple containing: (The loss for each output, The derivative of loss for each output including the calculation with the -2 term)
     """
-    return np.power(target - actual, 2)
+    return np.power(target - actual, 2), -2.0 * (target - actual)
 
-def cce_loss(target: np.array, actual: np.array) -> np.array:
+
+def cce_loss(target: np.array, actual: np.array) -> (np.array, np.array):
     """
     Calculates the CCE (Categorical Cross Entropy) loss between target and actual
     :param target: The target value for each output
     :param actual: The actual (calculated) value for each output
-    :return: The loss as an array with same dimensions as the input where each element
-    contains the same calculated CCE value
+    :return: Tuple containing: The loss as an array with same dimensions as the input where each element
+    contains the same calculated CCE value (The loss for each output, The derivative of loss for each output)
     """
+    # Calculate softmax to get probabilities
+    p_actual = actual.copy()
     # Clip actual values to avoid log(0) issues
-    actual = np.clip(actual, 1e-15, 1 - 1e-15)
+    p_actual = np.clip(p_actual, 1e-15, 1 - 1e-15)
     # Calculate cross-entropy
-    cross_entropy = - np.sum(target * np.log(actual)) / len(target)
+    cross_entropy = - np.sum(target * np.log(p_actual)) / len(target)
     result = target.copy()
     result.fill(cross_entropy)
-    return result
+    return result, -(target - p_actual)
+
 
 activation_functions = {
     "relu": [relu, relu_derivative],
@@ -115,6 +119,8 @@ activation_functions = {
     "tanh": [tanh, tanh_derivative],
     "linear": [linear, linear_derivative]
 }
+
+
 loss_functions = {
     "mse": mse_loss,
     "cce": cce_loss
