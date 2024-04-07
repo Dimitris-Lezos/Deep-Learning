@@ -117,7 +117,7 @@ class ANN:
                 # Calculate loss
                 _, d_loss, _ = self.loss_function(target, in_x)
                 if i == 0 and verbose:
-                    print(target, in_x, d_loss) #, self.layers[0].weights)
+                    print(target, in_x, d_loss)
                 # Back Propagation
                 for layer in reversed(self.layers):
                     d_loss = layer.back(d_loss)

@@ -81,4 +81,3 @@ class Layer:
         self.d = np.zeros(self.weights.shape)
         self.weights = self.weights + dw
         self.b = self.b + np.sum(dw)
-        print(dw)
