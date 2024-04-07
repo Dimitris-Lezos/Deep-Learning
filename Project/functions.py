@@ -2,6 +2,7 @@
 ReLU, sigmoid, tangent, and linear
 """
 import numpy as np
+import scipy
 
 
 def relu(x: float) -> float:
@@ -75,42 +76,44 @@ def linear_derivative(x: float) -> float:
     :param x: The variable to pass into Linear derivative
     :return: The Linear derivative output
     """
-    return 1
+    return 1.0
 
 
-def softmax(x: np.array) -> np.array:
-    # TODO: This needs to be normalized to avoid [inf] from the exp
-    e = np.exp(x)
-    return e / np.sum(e)
-
-
-def mse_loss(target: np.array, actual: np.array) -> (np.array, np.array):
+def mse_loss(target: np.array, calculated: np.array) -> (np.array, np.array):
     """
     Calculates the MSE (Mean Square Error) loss between target and actual
     :param target: The target value for each output
-    :param actual: The actual (calculated) value for each output
-    :return: Tuple containing: (The loss for each output, The derivative of loss for each output including the calculation with the -2 term)
+    :param calculated: The calculated value for each output
+    :return: Tuple containing: (
+        The loss for each output,
+        The derivative of loss for each output including the calculation with the -2 term,
+        The actual output
+        )
     """
-    return np.power(target - actual, 2), -2.0 * (target - actual)
+    return np.power(target - calculated, 2), -2.0 * (target - calculated), calculated
 
 
-def cce_loss(target: np.array, actual: np.array) -> (np.array, np.array):
+def cce_loss(target: np.array, calculated: np.array) -> (np.array, np.array):
     """
     Calculates the CCE (Categorical Cross Entropy) loss between target and actual
     :param target: The target value for each output
-    :param actual: The actual (calculated) value for each output
-    :return: Tuple containing: The loss as an array with same dimensions as the input where each element
-    contains the same calculated CCE value (The loss for each output, The derivative of loss for each output)
+    :param calculated: The calculated value for each output
+    :return: Tuple containing: (
+        The calculated CCE value
+        The derivative of loss for each output
+        The actual output, after applying softmax in the calculated values
+        )
     """
     # Calculate softmax to get probabilities
-    p_actual = actual.copy()
+    probabilities = scipy.special.softmax(calculated, axis=1)
     # Clip actual values to avoid log(0) issues
-    p_actual = np.clip(p_actual, 1e-15, 1 - 1e-15)
+    probabilities = np.clip(probabilities, 1e-15, 1 - 1e-15)
     # Calculate cross-entropy
-    cross_entropy = - np.sum(target * np.log(p_actual)) / len(target)
+    cross_entropy = - np.sum(target * np.log(probabilities)) / len(target)
     result = target.copy()
-    result.fill(cross_entropy)
-    return result, -(target - p_actual)
+    # We expect
+    result.fill(cross_entropy/len(target))
+    return result, -(target - probabilities), probabilities
 
 
 activation_functions = {

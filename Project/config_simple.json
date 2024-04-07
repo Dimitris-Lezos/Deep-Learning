@@ -1,6 +1,6 @@
 {
   "train_data_filename": "train.csv",
-  "verification": 0.3,
+  "test_size": 0.3,
   "random_state": 42,
   "test_data_filename": "test.csv",
   "header": 0,
@@ -21,13 +21,13 @@
       {
         "nodes": 2,
         "activation": "relu",
-        "input_weights": [[1, 1], [1, 1], [1, 1]],
-        "biases": [0, 0, 0]
+        "input_weights": [[10, 0], [0, 0], [0, 0.1]],
+        "biases": [0, 0]
       }
     ],
     "loss_function": "mse",
     "batch_size": 1,
-    "epochs": 10,
-    "tol": 0.0001
+    "epochs": 100,
+    "tol": 0.001
   }
 }

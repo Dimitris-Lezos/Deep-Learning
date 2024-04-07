@@ -1,11 +1,7 @@
-import math
-
+"""This class represents a layer of the ANN"""
 import numpy as np
 from functions import activation_functions
-from numpy import array
 
-#import pandas as pd
-#from pandas import Series, DataFrame
 
 class Layer:
     """
@@ -17,7 +13,7 @@ class Layer:
     :param params: Dictionary containing additional params (e.g. used by Adam algorithm)
     """
 
-    def __init__(self, inputs=int(1), nodes=int(1), input_weights=None, biases=None, activation=activation_functions['relu'], params={}):
+    def __init__(self, inputs=int(1), nodes=int(1), input_weights=None, biases=None, activation=activation_functions['relu']):
         """
         Create a Layer of the NN
         :param inputs: The number of inputs coming into the Layer
@@ -26,14 +22,15 @@ class Layer:
         :param biases: The initial biases of the nodes, if None zeros are assigned
         :param activation: The activation function of the nodes (same for all nodes)
         can be one of functions._relu, functions._sigmoid, functions._tanh, functions._linear
-        :param params: Dictionary containing additional params (e.g. used by Adam algorithm)
         """
         self.z = 0.0
         self.a = 0.0
         self.x = np.zeros(inputs)
         self.d = np.zeros((inputs, nodes))
         self.weights = np.random.RandomState(42).normal(loc=0.0, scale=1, size=(inputs, nodes))
-        self.params = params
+        # Additional parameters added to the layer that are used by ADAM optimizer
+        self.m = np.zeros((inputs, nodes))
+        self.v = np.zeros((inputs, nodes))
         if input_weights is not None:
             self.weights = np.array(input_weights)
             if self.weights.shape[0] != inputs or self.weights.shape[1] != nodes:
@@ -64,7 +61,6 @@ class Layer:
         :param d: the Δ coming back from the next layer, a term like -2.0 necessary for MSE is expected to be included in the provided d
         :return: the Δ to be sent to the previous layer
         """
-
         # Calculate Δk, a term like -2.0 necessary for MSE is expected to be included in the provided d
         dk = d * self.activation_derivative(self.z)
         # Calculate the partial derivatives
@@ -85,3 +81,4 @@ class Layer:
         self.d = np.zeros(self.weights.shape)
         self.weights = self.weights + dw
         self.b = self.b + np.sum(dw)
+        print(dw)

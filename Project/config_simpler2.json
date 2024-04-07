@@ -1,6 +1,6 @@
 {
   "train_data_filename": "train2.csv",
-  "verification": 0.3,
+  "test_size": 0.3,
   "random_state": 42,
   "test_data_filename": "test.csv",
   "header": 0,

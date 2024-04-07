@@ -1,12 +1,12 @@
 {
   "train_data_filename": "train.csv",
-  "verification": 0.3,
+  "test_size": 0.3,
   "random_state": 42,
   "test_data_filename": "test.csv",
   "header": 0,
   "ANN": {
     "adam": {
-      "a": 0.1,
+      "a": 0.001,
       "b1": 0.9,
       "b2": 0.999,
       "e": 0.00000001
@@ -15,8 +15,8 @@
       {
         "nodes": 2,
         "activation": "relu",
-        "input_weights": [[1, 10], [2, 20], [3, 30]],
-        "biases": [0, 0]
+        "#input_weights": [[1, 10], [2, 20], [3, 30]],
+        "#biases": [0, 0]
       }
     ],
     "loss_function": "mse",

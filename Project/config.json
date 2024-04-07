@@ -1,8 +1,10 @@
 {
   "train_data_filename": "train.csv",
-  "verification": 0.3,
+  "train_data_skiprows": [],
+  "test_size": 0.3,
   "random_state": 42,
   "test_data_filename": "test.csv",
+  "test_data_skiprows": [],
   "header": 0,
   "ANN": {
     "adam": {
@@ -27,7 +29,7 @@
     ],
     "loss_function": "mse",
     "batch_size": 1,
-    "epochs": 10,
+    "epochs": 40,
     "tol": 0.0001
   }
 }

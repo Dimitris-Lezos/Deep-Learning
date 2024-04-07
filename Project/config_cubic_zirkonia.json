@@ -1,0 +1,59 @@
+{
+  "train_data_filename": "cubic_zirconia_train_small.csv",
+  "train_data_skiprows": [],
+  "test_size": 0.3,
+  "random_state": 42,
+  "#test_data_filename": "ADULTERED_TEST_NOCLASSES.csv",
+  "#test_data_skiprows": [143, 944],
+  "header": 0,
+  "ANN": {
+    "adam": {
+      "a": 0.001,
+      "b1": 0.9,
+      "b2": 0.999,
+      "e": 0.00000001
+    },
+    "layers": [
+      {
+        "nodes": 5,
+        "activation": "relu",
+        "input_weights": null,
+        "biases": null
+      },
+      {
+        "nodes": 20,
+        "activation": "relu",
+        "input_weights": null,
+        "biases": null
+      },
+      {
+        "nodes": 100,
+        "activation": "relu",
+        "input_weights": null,
+        "biases": null
+      },
+      {
+        "nodes": 25,
+        "activation": "relu",
+        "input_weights": null,
+        "biases": null
+      },
+      {
+        "nodes": 5,
+        "activation": "relu",
+        "input_weights": null,
+        "biases": null
+      },
+      {
+        "nodes": 1,
+        "activation": "linear",
+        "input_weights": null,
+        "biases": null
+      }
+    ],
+    "loss_function": "mse",
+    "batch_size": 1,
+    "epochs": 10,
+    "tol": 0.0001
+  }
+}
